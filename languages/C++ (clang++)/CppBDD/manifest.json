@@ -1,0 +1,13 @@
+
+{
+  "visible_filenames": [
+    "hiker.feature",
+    "hiker_steps.cpp",
+    "makefile",
+    "cyber-dojo.sh"
+  ],
+  "filename_extension" : ".feature",
+  "display_name": "C++ (clang++), CppBDD",
+  "unit_test_framework": "google_test",
+  "image_name": "adgico/clang-3.6.0_cppbdd"
+}
