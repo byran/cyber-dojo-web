@@ -2,6 +2,8 @@
 #include <CppBDD/ScenarioContext.hpp>
 #include <gmock/gmock.h>
 
+using namespace ::testing;
+
 class HikerContext : public CppBDD::ScenarioContext
 {
 public:
