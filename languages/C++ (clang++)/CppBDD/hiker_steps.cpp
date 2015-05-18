@@ -1,5 +1,4 @@
 #include <CppBDD/StepDefinition.hpp>
-#include <CppBDD/ScenarioContext.hpp>
 #include <gmock/gmock.h>
 
 using namespace ::testing;
