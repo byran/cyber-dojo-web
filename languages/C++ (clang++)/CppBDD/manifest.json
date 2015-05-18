@@ -4,7 +4,8 @@
     "hiker.feature",
     "hiker_steps.cpp",
     "makefile",
-    "cyber-dojo.sh"
+    "cyber-dojo.sh",
+    "framework_instructions"
   ],
   "filename_extension" : ".feature",
   "display_name": "C++ (clang++), CppBDD",

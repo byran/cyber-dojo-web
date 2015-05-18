@@ -1,0 +1,72 @@
+## How the library works
+
+1. Create a step executable that contains step handlers and links to the
+   CppBDD library.
+2. Run the executable passing in paths to feature files
+
+## Creating a step executable
+
+A step executable is a combination of step handlers, scenario contexts and
+the code you want to run the features against.
+
+### Step Handlers
+
+To create a step handler file:
+
+1. Create a C++ source file and include the `<CppBDD/StepDefinition.hpp>`
+   header.
+2. Write the step handlers using the handler macros, they each take a single
+   parameter and have a step handler body. The parameter is a regular
+   expression that is used to check if the handler matches a step from a
+   feature file:
+   * `GIVEN_STEP("...")` - only matches steps starting with 'Given'
+   * `WHEN_STEP("...")` - only matches steps starting with 'When'
+   * `THEN_STEP("...")` - only matches steps starting with 'Then'
+   * `ANY_STEP("...")` - matches any step
+
+You can use C++11 raw strings to make specifying the regular expressions
+easier.
+
+### Scenario Contexts
+
+To create a scenario context create a class that derives from the
+`CppBDD::ScenarioContext` class. To access a scenario context call the
+`Context<T>()` method (where T is the type of your scenario context class)
+from inside a step handler. The `Context<T>()` method will return a pointer
+to an instance of class of type `T`. The instance of class `T` will be created
+the first time you call the `Context<T>()` method after a scenario starts and
+destroyed when the scenario is finished. class `T` must have a parameterless
+constructor.
+
+It is possible to create more then one scenario context per scenario providing
+they are of different types. Calling `Context<T>()` more than once specifying
+the same type will return the same pointer for every call.
+
+### Example step handler file
+	#include <CppBDD/StepDefinition.hpp>
+	#include <gmock/gmock.h>
+
+	class ExampleContext : public ::CppBDD/ScenarioContext
+	{
+	public:
+		int x;
+	}
+
+	GIVEN_STEP("an integer with the value 10")
+	{
+		Context<ExampleContext>()->x = 10;
+	}
+
+	WHEN_STEP("1 is added to the integer")
+	{
+		auto &x = Context<ExampleContext>()->x;
+		x = x + 1;
+	}
+
+	THEN_STEP("the value of the integer is (.*)")
+	{
+		auto &x = Context<ExampleContext>()->x;
+		auto expectedValue = Parameter<int>(0);
+		ASSERT_EQ(expectedValue, x);
+	}
+
