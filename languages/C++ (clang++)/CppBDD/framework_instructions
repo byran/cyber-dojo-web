@@ -23,9 +23,12 @@ To create a step handler file:
    * `WHEN_STEP("...")` - only matches steps starting with 'When'
    * `THEN_STEP("...")` - only matches steps starting with 'Then'
    * `ANY_STEP("...")` - matches any step
-
-You can use C++11 raw strings to make specifying the regular expressions
-easier.
+   You can use C++11 raw strings to make specifying the regular expressions
+   easier.
+3. To access parameters from within a step handler use the
+   `Parameter<T>(index)` method where `T` specifies the type you want the
+   parameter converted into and `index` specifies the zero based index of the
+   parameter.
 
 ### Scenario Contexts
 
@@ -70,7 +73,6 @@ the same type will return the same pointer for every call.
 		ASSERT_EQ(expectedValue, x);
 	}
 
-
 # Implementation status
 
 Current
@@ -86,4 +88,5 @@ Planned
   * Scenario Contexts and Examples
   * Data tables
   * DocStrings
+* More exception and checking
 
