@@ -70,3 +70,20 @@ the same type will return the same pointer for every call.
 		ASSERT_EQ(expectedValue, x);
 	}
 
+
+# Implementation status
+
+Current
+* Basic parsing of Feature files, including:
+  * Feature title
+  * Scenario title
+  * Given, When, Then and And steps
+* Given, When, Then and Any Step handlers
+
+Planned
+* More feature file parsing including:
+  * Background
+  * Scenario Contexts and Examples
+  * Data tables
+  * DocStrings
+
