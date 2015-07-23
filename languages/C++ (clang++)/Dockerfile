@@ -15,5 +15,5 @@ RUN apt-get install -y g++-4.9
 
 RUN wget http://llvm.org/releases/3.6.2/clang+llvm-3.6.2-x86_64-linux-gnu-ubuntu-14.04.tar.xz
 RUN tar -xvf clang+llvm-3.6.2-x86_64-linux-gnu-ubuntu-14.04.tar.xz
-RUN cp -r clang+llvm-3.6.2-x86_64-linux-gnu/* /usr/
+RUN cp -r clang+llvm-3.6.2-x86_64-linux-gnu-ubuntu-14.04/* /usr/
 
