@@ -100,6 +100,17 @@ do
 	sleep 1
 done
 
+# Allow images derived from the main cyber-dojo image to add scripts that
+# pull images for the languages they require
+if [ -x /pull_images.sh ]
+then
+	/pull_images.sh
+
+	# This only wants to happen the first time the container is run so
+	# remove the script when it's complete
+	rm -f /pull_images.sh
+fi
+
 # Start apache2 in the foreground
 /usr/sbin/apache2ctl -DFOREGROUND
 
