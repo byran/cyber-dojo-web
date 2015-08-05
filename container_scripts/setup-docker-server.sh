@@ -51,6 +51,12 @@ mkdir -p /var/www/cyber-dojo
 chmod g+s /var/www/cyber-dojo/katas
 rm /var/www/cyber-dojo/Gemfile.lock
 cd /var/www/cyber-dojo && bundle install
+
+# Build the caches
+/var/www/cyber-dojo/exercises/cache.rb
+/var/www/cyber-dojo/languages/cache.rb
+
+# Set the files owner and group
 cd /var/www/ && chown -R www-data cyber-dojo
 cd /var/www/ && chgrp -R www-data cyber-dojo
 
@@ -74,8 +80,4 @@ curl -sSL https://get.docker.com/ | sh
 # Add the www-data user to the docker group
 # so the server can run docker containers
 usermod -aG docker www-data
-
-# Build the caches
-/var/www/cyber-dojo/exercises/cache.rb
-/var/www/cyber-dojo/languages/cache.rb
 
