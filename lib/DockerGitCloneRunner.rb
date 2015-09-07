@@ -1,91 +1,145 @@
 
 # test runner providing isolation/protection/security
-# via Docker containers https://www.docker.io/
-# and relying on git clone from git-server to give state
-# access to docker process containers.
+# via Docker containers https://www.docker.io/ optionally
+# in a docker-swarm and relying on git clone from git-server running
+# git-daemon to give state access to docker process containers.
+#
+# Comments at end of file
 
-require_relative 'Runner'
+require_relative 'DockerTimesOutRunner'
+require 'tempfile'
 
 class DockerGitCloneRunner
 
-  def initialize(bash = Bash.new)
-    @bash = bash
-    raise RuntimeError.new("Docker not installed") if !installed?
+  def initialize(bash = Bash.new, cid_filename = Tempfile.new('cyber-dojo').path)
+    @bash,@cid_filename = bash,cid_filename
+    raise_if_docker_not_installed
   end
 
   def runnable?(language)    
-    language.support_filenames != [] &&
-      !language.display_name.end_with?('Approval')
+    image_pulled?(language)
   end
 
-  def git_server
-    "git@192.168.59.104"
-  end
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  def kata_path(kata)
-    id = kata.id.to_s
-    outer = id[0..1]
-    inner = id[2..-1]
-    "/opt/git/#{outer}}/#{inner}"
-  end
-  
   def started(avatar)
-    # kata = avatar.kata    
-    # cmd = "cd #{kata.path}"
-    # cmd += "&& git clone --bare #{avatar.name} #{avatar.name}.git"
-    # cmd += "&& ssh #{git_server} "mkdir -p "#{kata_path(kata)}"
-    # cmd += "&& scp -r #{avatar.name}.git {git_server}:#{kata_path(kata)}"
-    # cmd += "&& rm -rf #{avatar.name}.git"
-    # cmd += "&& cd #{avatar.path}"
-    # cmd += "&& git remote add master #{git_server}:#{kata_path(kata)}/#{avatar.name}.git"
-    # cmd += "&& git push --set-upstream master master"    
+    # Setup git repo on git-server for avatar
+
+    # TODO: Suppose there is an avatar created *before* the move to docker-swarm
+    #       I want to be able to re-enter it and then continue. But I don't
+    #       think that will work unless the already existing avatars folder
+    #       has the following commands run on it so it can push to the git server.
+    #
+    #       One way to resolve this might be to move this inside the run() command
+    #       and only run it once by detecting if the avatar's repo already has a remote.
+    #
+    #       This is a nice solution in that it also removes the need for this
+    #       "special" method which is a no-op in DockerVolumeMountRunner.rb
+    #
+    #       This might also be a better place to do the
+    #           git.config(path, 'push.default current')
+    #       currently in Avatar.git_setup()
+
+    kata = avatar.kata  
+    cmds = [
+      # Clone the avatar's repo into a bare repo ready for the git-server
+      "cd #{kata.path}",
+      "git clone --bare #{avatar.name} #{avatar.name}.git",
+      # Copy the bare repo to the git-server.
+      # scp -r says it makes directories as needed but it doesn't seem to
+      # which is why I'm preceding the scp with the mkdir -p
+      "sudo -u cyber-dojo ssh git@#{git_server_ip} 'mkdir -p #{opt_git_kata_path(kata)}'",
+      "sudo -u cyber-dojo scp -r #{avatar.name}.git git@#{git_server_ip}:#{opt_git_kata_path(kata)}",
+      # Allow git-daemon to serve it
+      "sudo -u cyber-dojo ssh git@#{git_server_ip} 'touch #{opt_git_kata_path(kata)}/#{avatar.name}.git/git-daemon-export-ok'",
+      # Remove bare repo from cyber-dojo server now its on the git-server
+      "rm -rf #{avatar.name}.git",
+      # Prepare avatar's repo to push to git-server
+      "cd #{avatar.path}",
+      "git remote add master git@#{git_server_ip}:#{opt_git_kata_path(kata)}/#{avatar.name}.git",
+      "sudo -u cyber-dojo git push --set-upstream master master"
+    ].join(';')
+    o,es = bash(cmds)
   end
   
-  def pre_test(avatar)
-    # git.commit(avatar.path, "-a -m 'pre-push' --quiet")
-    # git.push(avatar.path)
-  end
-  
-  def post_commit_tag(avatar)
-    # git.push(avatar.path)
-  end
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   def run(sandbox, command, max_seconds)
     avatar = sandbox.avatar
     kata = avatar.kata
-    # cmd = ""
-    # cmd += "git clone #{git_server}:#{kata_path(kata)}/#{avatar.name}.git"
-    # cmd += "&& cd #{avatar.name}"
-    # cmd += "&& ./cyber-dojo.sh"
-    # docker run #{cmd}
-    #
-    # Note: the git-server sees the git repo of the animal which is at the
-    # folder level of the animal and not sandbox.
-    # But this is ok. Even if the cyber-dojo.sh tries to [cd ..]
-    # and cause mischief any problems are localized since only
-    # the output comes back to the rails server.
-    #
-    # Note: Should run(sandbox,...) be run(avatar,...)?  I think so.
-    #
-    # Note: command being passed in allows extra testing options.
-    #
-    # Note: will be worth extracting DockerRunner that just does run()
-    #       into dedicated class.
+
+    # Assumes git daemon on the git server. 
+    git_push(avatar)
+    # Pipes all output from git clone to dev/null to stop it becoming part
+    # of the output visible in the browser which could affect traffic-light colour.
+    cmds = [
+      "git clone git://#{git_server_ip}#{kata_path(kata)}/#{avatar.name}.git /tmp/#{avatar.name} 2>&1 > /dev/null",
+      "cd /tmp/#{avatar.name}/sandbox && #{timeout(command,max_seconds)}"
+    ].join(';')
+    
+    # Using --net=host just to get something working. This is insecure.
+    # TODO: restrict it to just accessing the git server, port 9418
+    times_out_run('--net=host', kata.language.image_name, cmds, max_seconds)
+  end
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  def git_server_ip
+    # TODO: this will need to be set from external ENV[] setting
+    '46.101.57.179'
   end
 
 private
-  
-  include Runner  
-  include Stderr2Stdout
-   
-  def bash(command)
-    @bash.exec(command)
+
+  include DockerTimesOutRunner
+  include IdSplitter
+
+  def git_push(avatar)
+    # Changes from browser have already been reflected in avatar's sandbox.
+    # Push them to the git-server so docker container can git clone them.
+    # If no visible files have changed this will be a safe no-op
+    cmds = [
+      "cd #{avatar.path}",
+      "sudo -u cyber-dojo git commit -am 'pre-test-push' --quiet",
+      "sudo -u cyber-dojo git push master"
+    ].join(';')
+    o,es = bash(cmds)    
   end
 
-  def installed?
-    _,exit_status = bash(stderr2stdout('docker info > /dev/null'))
-    exit_status === 0
+  def opt_git_kata_path(kata)
+    '/opt/git' + kata_path(kata)
+  end
+  
+  def kata_path(kata)
+    id = kata.id.to_s
+    "/#{outer(id)}/#{inner(id)}"
+  end
+
+  def sudoi(cmd)
+    # If docker-swarm is being used the cyber-dojo user is assumed
+    # to have their docker-machine environment variables setup
+    # See notes/scaling/setup-cyber-dojo-user.txt
+    'sudo -u cyber-dojo -i' + ' ' + cmd.strip
   end
 
 end
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# The bash commands are run as a user called cyber-dojo.
+#
+# Assumptions:
+#
+# 1. git push from cyber-dojo server to git-server
+#
+# o) www-data (apache user) can sudo -u cyber-dojo on the cyber-dojo server
+# o) there is a user called cyber-dojo on the cyber-dojo server!
+# o) there is a user called git on the git server.
+# o) user cyber-dojo can ssh onto the git server as user git
+# o) the git-server ssh port (22) is open (only) for cyber-dojo server
+#
+# 2. git-clone from git-server onto a docker-swarm-node
+#
+# o) git server has git-daemon running to publically serve repos with a --base-path=/opt/git
+# o) on the git server git-daemons' port (9418) is open to (only) the docker swarm nodes.
 

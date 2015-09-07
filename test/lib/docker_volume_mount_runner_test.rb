@@ -1,152 +1,129 @@
-#!/usr/bin/env ../test_wrapper.sh lib
+#!/bin/bash ../test_wrapper.sh
 
 require_relative 'lib_test_base'
+require_relative 'DockerTestHelpers'
 
 class DockerVolumeMountRunnerTests < LibTestBase
 
+  include DockerTestHelpers
+
   def setup
     super
-    @bash = BashStub.new    
-    set_disk_class_name     'DiskStub'    
-    set_git_class_name      'GitSpy'   
-    set_one_self_class_name 'OneSelfDummy'     
-    kata = make_kata
-    @lion = kata.start_avatar(['lion'])    
+    set_disk_class_name     'DiskStub'
+    set_git_class_name      'GitSpy'
+    set_one_self_class_name 'OneSelfDummy'
+    @bash = BashStub.new
   end
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  test 'when docker is not installed constructor raises' do    
-    @bash.stub('',any_non_zero=42)
-    assert_raises(RuntimeError) { DockerVolumeMountRunner.new(@bash) }
-    assert @bash.spied[0].start_with? 'docker info'
+  test 'initialize() raises RuntimeError when docker is not installed' do
+    stub_docker_not_installed
+    assert_raises(RuntimeError) { make_docker_runner }
   end
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  test 'when docker is installed, image_names determines runnability' do
-    @bash.stub(docker_info_output, success)
-    @bash.stub(docker_images_output, success)
-    docker = DockerVolumeMountRunner.new(@bash)    
-    expected_image_names =
-    [
-      "cyberdojo/python-3.3.5_pytest",
-      "cyberdojo/rust-1.0.0_test"
-    ]
-    c_assert = languages['C-assert']
-    python_py_test = languages['Python-py.test']
-
-    assert @bash.spied[0].start_with?('docker info'), @bash.spied
-    assert @bash.spied[1].start_with?('docker images'), @bash.spied    
-    assert_equal expected_image_names, docker.image_names        
-    refute docker.runnable?(c_assert);
-    assert docker.runnable?(python_py_test);
+  test 'initialize() uses [docker info] not run as sudo' do
+    stub_docker_installed
+    make_docker_runner
+    assert_equal 'docker info', @bash.spied[0]
   end
-    
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  test 'docker run <-> bash interaction when cyber-dojo.sh completes in time' do
-    @bash.stub(docker_info_output, success)   # 0
-    @bash.stub(docker_images_output, success) # 1
-    docker = DockerVolumeMountRunner.new(@bash)
-    begin
-      @bash.stub('',success)        # 2 rm cidfile.txt
-      @bash.stub('blah',success)    # 3 timeout ... docker run ...
-      pid = '921'
-      @bash.stub(pid,success)       # 4 cat ... cidfile.txt
-      @bash.stub('',success)        # 5 docker stop pid ; docker rm pid      
-      cmd = 'cyber-dojo.sh'
-      output = docker.run(@lion.sandbox, cmd, max_seconds=5)      
-      assert_equal 'blah',output, 'output'      
-      assert_spied(max_seconds, cmd, pid)
-    rescue Exception => e  
-      p e.message
-      @bash.dump
-      assert false
-    end
-  end    
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  test 'docker run <-> bash interaction when cyber-dojo.sh times out' do
-    @bash.stub(docker_info_output, success)   # 0
-    @bash.stub(docker_images_output, success) # 1
-    docker = DockerVolumeMountRunner.new(@bash)
-    begin
-      @bash.stub('',success)               # 2 rm cidfile.txt
-      @bash.stub('blah',fatal_error(kill)) # 3 timeout ... docker run ...
-      pid = '921'
-      @bash.stub(pid,success)              # 4 cat ... cidfile.txt
-      @bash.stub('',success)               # 5 docker stop pid ; docker rm pid      
-      cmd = 'cyber-dojo.sh'
-      output = docker.run(@lion.sandbox, cmd, max_seconds=5)      
-      assert output.start_with?("Unable to complete the tests in #{max_seconds} seconds."), 'Unable'      
-      assert_spied(max_seconds, cmd, pid)
-    rescue Exception => e
-      p e.message
-      @bash.dump    
-      assert false
-    end
+  test 'runnable?() uses [docker images] not run as sudo' do
+    stub_docker_installed
+    docker = make_docker_runner
+    stub_docker_images_python_py_test
+    assert docker.runnable?(languages['Python-py.test'])
+    refute docker.runnable?(languages['C-assert'])
+    assert_equal 'docker images', @bash.spied[1]
   end
-    
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  
-  def assert_spied(max_seconds, cmd, pid)
-    cidfile = @lion.path + "cidfile.txt"
-    assert_equal "rm -f #{cidfile}", @bash.spied[2], 'rm -f'
-    run_cmd = @bash.spied[3]
-    assert run_cmd.start_with?("timeout --signal=#{kill} #{max_seconds+5}s"), 'timeout (outer)'
-    assert run_cmd.include?("docker run"), 'docker run'
-    assert run_cmd.include?("--cidfile=#{quoted(cidfile)}"), 'cidfile'
-    assert run_cmd.include?("timeout --signal=#{kill} #{max_seconds}s #{cmd}"), 'timeout (inner)'
-    assert_equal "cat #{cidfile}",                        @bash.spied[4], 'cat cidfile'
-    assert_equal "docker stop #{pid} ; docker rm #{pid}", @bash.spied[5], 'docker stop+rm'    
+
+  test 'started(avatar) is a no-op' do
+    stub_docker_installed
+    docker = make_docker_runner
+    before = @bash.spied.clone
+    docker.started(nil)
+    after = @bash.spied.clone
+    assert_equal before, after
   end
-  
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    
-  def docker_info_output
-    [
-      "Containers: 6",
-      "Images: 440",
-      "Storage Driver: aufs",
-      "Root Dir: /var/lib/docker/aufs",
-      "Dirs: 452",
-      "Execution Driver: native-0.2",
-      "Kernel Version: 3.2.0-4-amd64",
-      "Username: cyberdojo",
-      "Registry: [https://index.docker.io/v1/]",
-      "WARNING: No memory limit support",
-      "WARNING: No swap limit support"
-    ].join("\n")
+
+  test 'run() completes and does not timeout - exact bash cmd interaction' do
+    stub_docker_installed
+    docker = make_docker_runner
+    @lion = make_kata.start_avatar(['lion'])
+    stub_docker_run(completes)
+    output = docker.run(@lion.sandbox, cyber_dojo_cmd, max_seconds)
+    assert_equal 'blah', output, 'output'
+    assert_bash_commands_spied
   end
-  
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  
-  def docker_images_output
-    [
-      "REPOSITORY                       TAG     IMAGE ID      CREATED        VIRTUAL SIZE",
-      "<none>                           <none>  b7253690a1dd  2 weeks ago    1.266 GB",
-      "cyberdojo/python-3.3.5_pytest    latest  d9603e342b22  13 months ago  692.9 MB",
-      "cyberdojo/rust-1.0.0_test        latest  a8e2d9d728dc  2 weeks ago    750.3 MB",
-      "<none>                           <none>  0ebf80aa0a8a  2 weeks ago    569.8 MB"
-    ].join("\n")  
+
+  test 'run() times out - exact base cmd interaction' do
+    stub_docker_installed
+    docker = make_docker_runner
+    @lion = make_kata.start_avatar(['lion'])
+    stub_docker_run(fatal_error(kill))
+    output = docker.run(@lion.sandbox, cyber_dojo_cmd, max_seconds)
+    assert output.start_with?("Unable to complete the tests in #{max_seconds} seconds."), 'Unable'
+    assert_bash_commands_spied
   end
-  
-  def success
-    0
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  def make_docker_runner
+    DockerVolumeMountRunner.new(@bash,cid_filename)
   end
-  
-  def kill
-    9
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  def assert_bash_commands_spied
+    spied = @bash.spied
+    # 0 docker info from initialize()
+    assert_equal "rm -f #{cid_filename}", spied[1], 'remove cidfile'
+    assert_equal exact_docker_run_cmd,    spied[2], 'main docker run command'
+    assert_equal "cat #{cid_filename}",   spied[3], 'get pid from cidfile'
+    assert_equal "docker stop #{pid}",    spied[4], 'docker stop pid'
+    assert_equal "docker rm #{pid}",      spied[5], 'docker rm pid'
   end
-  
-  def fatal_error(signal)
-    128 + signal
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  def exact_docker_run_cmd
+    language = @lion.kata.language
+    language_path = language.path
+    language_volume_mount = language_path + ':' + language_path + ":ro"
+    kata_volume_mount = @lion.sandbox.path + ":/sandbox:rw"
+
+    command = "timeout --signal=#{kill} #{max_seconds}s #{cyber_dojo_cmd} 2>&1"
+
+    "timeout --signal=#{kill} #{max_seconds+5}s" +
+      ' docker run' +
+        ' --user=www-data' +
+        " --cidfile=#{quoted(cid_filename)}" +
+        ' --net=none' +
+        " -v #{quoted(language_volume_mount)}" +
+        " -v #{quoted(kata_volume_mount)}" +
+        ' -w /sandbox' +
+        " #{language.image_name}" +
+        " /bin/bash -c #{quoted(command)} 2>&1"
   end
-  
-  def quoted(s)
-    '"' + s + '"'
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  def stub_docker_run(outcome)
+    stub_rm_cidfile
+    stub_timeout(outcome)
+    stub_cat_cidfile
+    stub_docker_stop
+    stub_docker_rm
   end
-  
+
 end

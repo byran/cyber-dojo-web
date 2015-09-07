@@ -12,8 +12,6 @@ class HostRunner
   end
 
   def started(avatar); end
-  def pre_test(avatar); end
-  def post_commit_tag(avatar); end
 
   def run(sandbox, command, max_seconds)
     command = "cd '#{sandbox.path}';" + stderr2stdout(command)

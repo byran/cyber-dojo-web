@@ -1,4 +1,4 @@
-#!/usr/bin/env ../test_wrapper.sh app/helpers
+#!/bin/bash ../test_wrapper.sh
 
 require_relative 'app_helpers_test_base'
 
@@ -36,6 +36,7 @@ class TipTests < AppHelpersTestBase
   #- - - - - - - - - - - - - - - - - -
 
   test 'traffic light tip' do
+    set_runner_class_name('RunnerStub')
     set_git_class_name('GitSpy')
     kata = make_kata
     lion = kata.start_avatar(['lion'])

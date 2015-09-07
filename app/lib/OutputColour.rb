@@ -1,5 +1,7 @@
 
-module OutputColour
+module OutputColour # mix-in
+
+  module_function
 
   #  'red'   - the tests ran but at least one failed
   #  'amber' - the tests could not be run (eg syntax error)
@@ -233,7 +235,7 @@ module OutputColour
   end
 
   def self.parse_scala_test(output)
-    scala_pattern = /Tests: succeeded (\d+), failed (\d+), ignored (\d+), pending (\d+)/
+    scala_pattern = /Tests: succeeded (\d+), failed (\d+), canceled (\d+), ignored (\d+), pending (\d+)/
     if match = scala_pattern.match(output)
       match[2] === '0' ? :green : :red
     else

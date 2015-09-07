@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Installs the latest cyber-dojo.
-# Does *not* install docker containers. 
+# Does *not* install docker containers.
 # For that use
 #   $ /var/www/cyber-dojo/admin_scripts/docker_pull_all.sh
 # or
@@ -10,20 +10,23 @@
 cyberDojoHome=/var/www/cyber-dojo
 cd $cyberDojoHome
 
+# store the sha1 of the commit before the update
+GIT_SHA1_BEFORE=`git rev-parse --verify HEAD`
+
 # store the time-stamp of this file before doing git-pull
 MY_TIME_STAMP_BEFORE=`stat -c %y $cyberDojoHome/admin_scripts/pull.sh`
 
-# get latest source from https://github.com/JonJagger/cyber-dojo
-# if it asks for a password just hit return
+# get latest source
 echo "git pulling from https://github.com/JonJagger/cyber-dojo"
-git pull --no-edit origin
+cd $cyberDojoHome
+git pull --no-edit origin master
 ret=$?
 if [ $ret -ne 0 ]; then
   exit
 fi
 
-# store the time-stamp of this file before after a git-pull
-MY_TIME_STAMP_AFTER=`stat -c %y $cyberdojoHome/admin_scripts/pull.sh`
+# store the time-stamp of this file after the git-pull
+MY_TIME_STAMP_AFTER=`stat -c %y $cyberDojoHome/admin_scripts/pull.sh`
 
 apt-get install -y acl
 
@@ -77,3 +80,7 @@ if [ "$MY_TIME_STAMP_BEFORE" != "$MY_TIME_STAMP_AFTER" ]; then
   echo ">>>>>>>>> ALERT <<<<<<<<<"
 fi
 
+echo
+echo "If something went wrong you can revert to the previous version."
+echo "$ git checkout $GIT_SHA1_BEFORE"
+echo

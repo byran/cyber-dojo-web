@@ -6,7 +6,7 @@
 #    I don't want any confusion between the git repo created
 #    in a test (for an animal) and the main git repo of cyber-dojo!
 #
-# 2. collect and processes coverage stats
+# 2. collects and processes coverage stats
 # 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Programmed for three cases...
@@ -38,10 +38,13 @@ wrapper_test_log='WRAPPER.log.tmp'
 
 echo 'test_wrapper.sh....'
 
-module=$1
+#pwd                       # eg  /var/www/cyber-dojo/test/app_lib
+cwd=${PWD##*/}             # eg  app_lib
+module=${cwd/_//}          # eg  app/lib
 echo $module
-if [ "$#" -eq 2 ]; then
-  filename=$2
+
+if [ "$#" -eq 1 ]; then
+  filename=$1
 else
   filename='all_tests'
 fi
@@ -49,8 +52,11 @@ wrapped_filename="$filename.WRAPPED"
 
 GIT_USER_NAME_BEFORE=`git config user.name`
 
+# Add an extra line
 echo '' > $wrapped_filename
-cat ${*:2} | tail -n +2 >> $wrapped_filename
+
+cat ${*} | tail -n +2 >> $wrapped_filename
+
 rm -rf ../../coverage/.resultset.json
 ruby $wrapped_filename 2>&1 | tee $wrapper_test_log
 rm $wrapped_filename

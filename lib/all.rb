@@ -2,11 +2,14 @@
 # this list has order dependencies
 
 %w{
+  IdSplitter
   Stderr2Stdout
   Cleaner  
   Bash
   HttpRequester
   Runner
+    DockerTimesOutRunner
+    DockerGitCloneRunner
     DockerVolumeMountRunner
     HostRunner
   HostDisk  
@@ -14,7 +17,6 @@
   HostGit
   TimeNow
   UniqueId
-  IdSplitter
   LanguagesDisplayNamesSplitter
   OneSelf  
   OneSelfDummy

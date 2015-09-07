@@ -1,4 +1,4 @@
-#!/usr/bin/env ../test_wrapper.sh app/models
+#!/bin/bash ../test_wrapper.sh
 
 require_relative 'model_test_base'
 require 'tempfile'
@@ -78,27 +78,10 @@ class LanguageTests < ModelTestBase
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  test 'support_filenames defaults to [ ] when not set' do
-    @language = languages['Ruby']
-    spy_manifest({ 'visible_filenames' => [ 'test_untitled.rb' ] })
-    assert_equal [ ], @language.support_filenames
-  end
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  test 'support_filenames reads back as set' do
-    @language = languages['Java']
-    support_filenames = [ 'x.jar', 'y.jar' ]
-    spy_manifest({ 'support_filenames' => support_filenames })
-    assert_equal support_filenames, @language.support_filenames
-  end
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
   test 'highlight_filenames defaults to [ ] when not set' do
     @language = languages['Ruby']
     spy_manifest({ 'visible_filenames' => [ 'test_untitled.rb' ] })
-    assert_equal [ ], @language.support_filenames
+    assert_equal [ ], @language.highlight_filenames
   end
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -272,38 +255,6 @@ class LanguageTests < ModelTestBase
       named = ex.to_s.include?(name)
     end
     assert named
-  end
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  class StubSandbox
-    def initialize
-      @disk = DiskFake.new
-    end
-    def dir
-      @disk['approval']
-    end
-  end
-
-  test 'after test Approval newly created txt files are added ' +
-       'to visible_files and existing deleted txt files are ' +
-       'removed from visible_files' do
-    name = 'Ruby-Approval'
-    @language = languages[name]
-    @language.dir.write('manifest.json', { :display_name => 'Ruby, Approval' })
-    sandbox = StubSandbox.new
-    sandbox.dir.write('created.txt', 'content')
-    sandbox.dir.write('wibble.hpp', 'non txt file')
-    visible_files = {
-      'deleted.txt' => 'once upon a time',
-      'wibble.cpp'  => '#include <wibble.hpp>'
-    }
-    @language.after_test(sandbox.dir, visible_files)
-    expected = {
-      'created.txt' => 'content',
-      'wibble.cpp'  => '#include <wibble.hpp>'
-    }
-    assert_equal expected, visible_files
   end
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

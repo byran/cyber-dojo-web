@@ -23,4 +23,6 @@ class RunnerStub
     @runnable
   end
 
+  def started(avatar); end
+
 end

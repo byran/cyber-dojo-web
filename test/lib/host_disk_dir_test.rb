@@ -1,4 +1,4 @@
-#!/usr/bin/env ../test_wrapper.sh lib
+#!/bin/bash ../test_wrapper.sh
 
 require_relative 'lib_test_base'
 
@@ -15,7 +15,7 @@ class HostDiskTests < LibTestBase
   end
   
   def path
-    File.expand_path('../..', File.dirname(__FILE__)) + '/temp/'
+    File.expand_path('../..', File.dirname(__FILE__)) + '/tmp/'
   end
   
   def dir

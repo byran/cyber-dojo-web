@@ -1,4 +1,4 @@
-#!/usr/bin/env ../test_wrapper.sh app/models
+#!/bin/bash ../test_wrapper.sh
 
 require_relative 'model_test_base'
 
@@ -20,6 +20,17 @@ class KatasTests < ModelTestBase
     assert_equal path+'/', katas.path
     assert path_ends_in_slash?(katas)
     assert path_has_no_adjacent_separators?(katas)
+  end
+
+  #- - - - - - - - - - - - - - - -
+
+  test 'create_kata saves empty started_avatars.json file' do
+    id = unique_id
+    kata = make_kata(id)
+    filename = 'started_avatars.json'
+    assert kata.dir.exists?(filename), 'exists'
+    started = JSON.parse(kata.dir.read(filename))
+    assert_equal [],started
   end
 
   #- - - - - - - - - - - - - - - -

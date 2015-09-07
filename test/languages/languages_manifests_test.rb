@@ -1,16 +1,40 @@
-#!/usr/bin/env ruby
+#!/bin/bash ../test_wrapper.sh
 
 require_relative 'languages_test_base'
 
 class LanguagesManifestsTests < LanguagesTestBase
 
-  test 'manifests of all languages' do
-    dirs = Dir.glob("#{root_path}languages/*/*/manifest.json").each do |file|
-      folders = File.dirname(file).split('/')[-2..-1]
+  test 'manifests of each languages' do
+    manifests.each do |filename|
+      folders = File.dirname(filename).split('/')[-2..-1]
       assert_equal 2, folders.size
       lang,test = folders
       check("#{lang}-#{test}")
     end
+  end
+
+  test 'no two manifests have the same image_name' do
+    so_far = []
+    manifests.each do |filename|
+      manifest = JSON.parse(IO.read(filename))
+      image_name = manifest['image_name']
+      assert !so_far.include?(image_name), image_name
+      so_far << image_name
+    end
+  end
+
+  test 'no two manifests have the same display_name' do
+    so_far = []
+    manifests.each do |filename|
+      manifest = JSON.parse(IO.read(filename))
+      display_name = manifest['display_name']
+      assert !so_far.include?(display_name), display_name
+      so_far << display_name
+    end
+  end
+
+  def manifests
+    Dir.glob("#{root_path}languages/*/*/manifest.json")
   end
 
   def check(language_name)
@@ -19,14 +43,12 @@ class LanguagesManifestsTests < LanguagesTestBase
     assert required_keys_exist?
     assert !unknown_keys_exist?
     assert !duplicate_visible_filenames?
-    assert !duplicate_support_filenames?
     assert progress_regexs_valid?
     assert display_name_valid?
     assert !filename_extension_starts_with_dot?
     assert cyberdojo_sh_exists?
     assert cyberdojo_sh_has_execute_permission?
     assert all_visible_files_exist?
-    assert all_support_files_exist?
     assert highlight_filenames_are_subset_of_visible_filenames?
     assert colour_method_for_unit_test_framework_output_exists?
     assert !any_files_owner_is_root?
@@ -73,7 +95,6 @@ class LanguagesManifestsTests < LanguagesTestBase
 
   def unknown_keys_exist?
     known = [ 'visible_filenames',
-              'support_filenames',
               'progress_regexs',
               'filename_extension',
               'highlight_filenames',
@@ -153,23 +174,6 @@ class LanguagesManifestsTests < LanguagesTestBase
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  def duplicate_support_filenames?
-    support_filenames.each do |filename|
-      if support_filenames.count(filename) > 1
-        message =
-          alert +
-          " #{manifest_filename}'s 'support_filenames' contains" +
-          " #{filename} more than once"
-        puts message
-        return true
-      end
-    end
-    print '.'
-    false
-  end
-
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
   def progress_regexs_valid?
     if progress_regexs.class.name != "Array"
         message =
@@ -234,12 +238,6 @@ class LanguagesManifestsTests < LanguagesTestBase
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  def all_support_files_exist?
-    all_files_exist?(:support_filenames)
-  end
-
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
   def all_files_exist?(symbol)
     (manifest[symbol] || [ ]).each do |filename|
       if !File.exists?(language_dir + '/' + filename)
@@ -277,12 +275,11 @@ class LanguagesManifestsTests < LanguagesTestBase
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   def cyberdojo_sh_exists?
-    filenames = visible_filenames + support_filenames
-    if filenames.select{ |filename| filename == "cyber-dojo.sh" } == [ ]
+    if visible_filenames.select{ |filename| filename == "cyber-dojo.sh" } == [ ]
       message =
         alert +
         "  #{manifest_filename} must contain ['cyber-dojo.sh'] in \n" +
-        "  'visible_filenames' or 'support_filenames'"
+        "  'visible_filenames'"
       puts message
       return false
     end
@@ -329,7 +326,7 @@ class LanguagesManifestsTests < LanguagesTestBase
 
   def any_files_owner_is_root?
     # for HostTestRunner
-    (visible_filenames + support_filenames + ['manifest.json']).each do |filename|
+    (visible_filenames + ['manifest.json']).each do |filename|
       uid = File.stat(language_dir + '/' + filename).uid
       owner = Etc.getpwuid(uid).name
       if owner == 'root'
@@ -348,7 +345,7 @@ class LanguagesManifestsTests < LanguagesTestBase
 
   def any_files_group_is_root?
     # for HostTestRunner
-    (visible_filenames + support_filenames + ['manifest.json']).each do |filename|
+    (visible_filenames + ['manifest.json']).each do |filename|
       gid = File.stat(language_dir + '/' + filename).gid
       owner = Etc.getgrgid(gid).name
       if owner == 'root'
@@ -366,7 +363,7 @@ class LanguagesManifestsTests < LanguagesTestBase
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   def any_file_is_unreadable?
-    (visible_filenames + support_filenames + ['manifest.json']).each do |filename|
+    (visible_filenames + ['manifest.json']).each do |filename|
       if !File.stat(language_dir + '/' + filename).world_readable?
         message =
           alert +
@@ -430,10 +427,6 @@ private
   end
   
   def visible_filenames
-    manifest_property || [ ]
-  end
-
-  def support_filenames
     manifest_property || [ ]
   end
 
