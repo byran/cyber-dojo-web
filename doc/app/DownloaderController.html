@@ -65,7 +65,18 @@
   
 </div>
 
-    
+    <div id="includes-section" class="nav-section">
+  <h3>Included Modules</h3>
+
+  <ul class="link-list">
+  
+  
+    <li><a class="include" href="IdSplitter.html">IdSplitter</a>
+  
+  
+  </ul>
+</div>
+
     
     <!-- Method Quickref -->
 <div id="method-list-section" class="nav-section">
@@ -131,10 +142,10 @@
             <pre><span class="ruby-comment"># File app/controllers/downloader_controller.rb, line 4</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">download</span>
   <span class="ruby-comment"># an id such as 01FE818E68 corresponds to the folder katas/01/FE818E86</span>
-  <span class="ruby-identifier">cd_cmd</span> = <span class="ruby-node">&quot;cd #{dojo.path}/katas&quot;</span>
+  <span class="ruby-identifier">cd_cmd</span> = <span class="ruby-node">&quot;cd #{katas.path}&quot;</span>
   <span class="ruby-identifier">tar_cmd</span> = <span class="ruby-node">&quot;tar -zcf ../zips/#{id}.tar.gz #{outer(id)}/#{inner(id)}&quot;</span>
   <span class="ruby-identifier">system</span>(<span class="ruby-identifier">cd_cmd</span> <span class="ruby-operator">+</span> <span class="ruby-string">&quot;;&quot;</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">tar_cmd</span>)
-  <span class="ruby-identifier">zip_filename</span> = <span class="ruby-node">&quot;#{dojo.path}/zips/#{id}.tar.gz&quot;</span>
+  <span class="ruby-identifier">zip_filename</span> = <span class="ruby-node">&quot;#{katas.path}/../zips/#{id}.tar.gz&quot;</span>
   <span class="ruby-identifier">send_file</span> <span class="ruby-identifier">zip_filename</span>
   <span class="ruby-comment"># would like to delete this zip file</span>
   <span class="ruby-comment"># but download tests unzip them to verify</span>

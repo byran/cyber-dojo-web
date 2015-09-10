@@ -23,7 +23,7 @@ class Kata
     avatar = nil
     dir.lock do
       filename = 'started_avatars.json'
-      started = dir.exists?(filename) ? JSON.parse(dir.read(filename)) : avatars.names
+      started = dir.exists?(filename) ? JSON.parse(read(filename)) : avatars.names
       free_names = avatar_names - started
       if free_names != [ ]
         avatar = Avatar.new(self, free_names[0])
@@ -32,7 +32,6 @@ class Kata
           started << avatar.name
           dir.write(filename, started)
         end
-        one_self.started(avatar)
       end
     end
     avatar
@@ -84,10 +83,6 @@ private
 
   def manifest_filename
     'manifest.json'
-  end
-  
-  def read(filename)
-    dir.read(filename)
   end
   
   def earliest_light

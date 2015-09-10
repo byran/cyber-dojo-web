@@ -71,7 +71,7 @@
   <ul class="link-list">
   
   
-    <li><a class="include" href="GitDiff.html">GitDiff</a>
+    <li><a class="include" href="DifferWorker.html">DifferWorker</a>
   
   
   </ul>
@@ -142,17 +142,17 @@
             <pre><span class="ruby-comment"># File app/controllers/differ_controller.rb, line 4</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">diff</span>
   <span class="ruby-ivar">@lights</span> = <span class="ruby-identifier">avatar</span>.<span class="ruby-identifier">lights</span>.<span class="ruby-identifier">map</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">light</span><span class="ruby-operator">|</span> <span class="ruby-identifier">light</span>.<span class="ruby-identifier">to_json</span> }
-  <span class="ruby-identifier">diffs</span> = <span class="ruby-identifier">git_diff_view</span>(<span class="ruby-identifier">avatar</span>.<span class="ruby-identifier">tags</span>[<span class="ruby-identifier">was_tag</span>].<span class="ruby-identifier">diff</span>(<span class="ruby-identifier">now_tag</span>))
-      <span class="ruby-identifier">render</span> <span class="ruby-value">:json</span> =<span class="ruby-operator">&gt;</span> {
-        <span class="ruby-value">:lights</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-ivar">@lights</span>,
-        <span class="ruby-value">:diffs</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">diffs</span>,
-        <span class="ruby-value">:prevAvatar</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">prevAvatar</span>,
-        <span class="ruby-value">:nextAvatar</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">nextAvatar</span>,
-        <span class="ruby-value">:idsAndSectionCounts</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">prune</span>(<span class="ruby-identifier">diffs</span>),
-        <span class="ruby-value">:currentFilenameId</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">most_changed_file_id</span>(<span class="ruby-identifier">diffs</span>, <span class="ruby-identifier">current_filename</span>),
-        <span class="ruby-value">:wasTag</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">was_tag</span>,
-        <span class="ruby-value">:nowTag</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">now_tag</span>
-      }
+  <span class="ruby-identifier">diffs</span> = <span class="ruby-identifier">git_diff_view</span>(<span class="ruby-identifier">avatar</span>.<span class="ruby-identifier">diff</span>(<span class="ruby-identifier">was_tag</span>,<span class="ruby-identifier">now_tag</span>))
+  <span class="ruby-identifier">render</span> <span class="ruby-identifier">json</span><span class="ruby-operator">:</span> {
+            <span class="ruby-identifier">lights</span><span class="ruby-operator">:</span> <span class="ruby-ivar">@lights</span>,
+            <span class="ruby-identifier">diffs</span><span class="ruby-operator">:</span> <span class="ruby-identifier">diffs</span>,
+            <span class="ruby-identifier">prevAvatar</span><span class="ruby-operator">:</span> <span class="ruby-identifier">prev_ring</span>(<span class="ruby-identifier">active_avatar_names</span>,<span class="ruby-identifier">avatar_name</span>),
+            <span class="ruby-identifier">nextAvatar</span><span class="ruby-operator">:</span> <span class="ruby-identifier">next_ring</span>(<span class="ruby-identifier">active_avatar_names</span>,<span class="ruby-identifier">avatar_name</span>),
+            <span class="ruby-identifier">idsAndSectionCounts</span><span class="ruby-operator">:</span> <span class="ruby-identifier">prune</span>(<span class="ruby-identifier">diffs</span>),
+            <span class="ruby-identifier">currentFilenameId</span><span class="ruby-operator">:</span> <span class="ruby-identifier">pick_file_id</span>(<span class="ruby-identifier">diffs</span>, <span class="ruby-identifier">current_filename</span>),
+            <span class="ruby-identifier">wasTag</span><span class="ruby-operator">:</span> <span class="ruby-identifier">was_tag</span>,
+            <span class="ruby-identifier">nowTag</span><span class="ruby-operator">:</span> <span class="ruby-identifier">now_tag</span>
+          }    
 <span class="ruby-keyword">end</span></pre>
           </div>
           

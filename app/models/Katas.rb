@@ -50,7 +50,7 @@ class Katas
     return enum_for(:each) unless block_given?
     dir.each_kata_id do |id|
       yield self[id]
-    end  
+    end 
   end
 
   def [](id)

@@ -71,7 +71,7 @@
   <ul class="link-list">
   
   
-    <li><a class="include" href="TimeNow.html">TimeNow</a>
+    <li><a class="include" href="DashboardWorker.html">DashboardWorker</a>
   
   
   </ul>
@@ -143,12 +143,10 @@
 
           
           <div class="method-source-code" id="heartbeat-source">
-            <pre><span class="ruby-comment"># File app/controllers/dashboard_controller.rb, line 18</span>
+            <pre><span class="ruby-comment"># File app/controllers/dashboard_controller.rb, line 11</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">heartbeat</span>
   <span class="ruby-identifier">gather</span>
-  <span class="ruby-identifier">respond_to</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">format</span><span class="ruby-operator">|</span>
-    <span class="ruby-identifier">format</span>.<span class="ruby-identifier">js</span>
-  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">respond_to</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">format</span><span class="ruby-operator">|</span> <span class="ruby-identifier">format</span>.<span class="ruby-identifier">js</span> }    
 <span class="ruby-keyword">end</span></pre>
           </div>
           
@@ -179,18 +177,9 @@
 
           
           <div class="method-source-code" id="progress-source">
-            <pre><span class="ruby-comment"># File app/controllers/dashboard_controller.rb, line 25</span>
+            <pre><span class="ruby-comment"># File app/controllers/dashboard_controller.rb, line 16</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">progress</span>
-  <span class="ruby-identifier">animals</span> = { }
-  <span class="ruby-identifier">avatars</span>.<span class="ruby-identifier">active</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">avatar</span><span class="ruby-operator">|</span>
-    <span class="ruby-identifier">animals</span>[<span class="ruby-identifier">avatar</span>.<span class="ruby-identifier">name</span>] = {
-      <span class="ruby-value">:colour</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">avatar</span>.<span class="ruby-identifier">lights</span>[<span class="ruby-value">-1</span>].<span class="ruby-identifier">colour</span>,
-      <span class="ruby-value">:progress</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">most_recent_progress</span>(<span class="ruby-identifier">avatar</span>)
-    }
-  <span class="ruby-keyword">end</span>
-  <span class="ruby-identifier">render</span> <span class="ruby-value">:json</span> =<span class="ruby-operator">&gt;</span> {
-    <span class="ruby-value">:animals</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">animals</span>
-  }
+  <span class="ruby-identifier">render</span> <span class="ruby-identifier">json</span><span class="ruby-operator">:</span> { <span class="ruby-identifier">animals</span><span class="ruby-operator">:</span> <span class="ruby-identifier">animals_progress</span> }
 <span class="ruby-keyword">end</span></pre>
           </div>
           
@@ -221,19 +210,10 @@
 
           
           <div class="method-source-code" id="show-source">
-            <pre><span class="ruby-comment"># File app/controllers/dashboard_controller.rb, line 4</span>
+            <pre><span class="ruby-comment"># File app/controllers/dashboard_controller.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">show</span>
   <span class="ruby-identifier">gather</span>
-  <span class="ruby-ivar">@title</span> = <span class="ruby-string">&#39;dashboard&#39;</span>
-  <span class="ruby-comment"># provide these if you want to open the diff-history for a</span>
-  <span class="ruby-comment"># specific [avatar,was_tag,now_tag] as the dashboard opens.</span>
-  <span class="ruby-comment"># See also app/controllers/differ_controller.rb</span>
-  <span class="ruby-keyword">if</span> <span class="ruby-identifier">avatar_name</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">was_tag</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">now_tag</span>
-    <span class="ruby-ivar">@id</span> = <span class="ruby-identifier">id</span>
-    <span class="ruby-ivar">@avatar_name</span> = <span class="ruby-identifier">avatar_name</span>
-    <span class="ruby-ivar">@was_tag</span> = <span class="ruby-identifier">was_tag</span>
-    <span class="ruby-ivar">@now_tag</span> = <span class="ruby-identifier">now_tag</span>
-  <span class="ruby-keyword">end</span>
+  <span class="ruby-ivar">@title</span> = <span class="ruby-string">&#39;dashboard:&#39;</span> <span class="ruby-operator">+</span> <span class="ruby-ivar">@kata</span>.<span class="ruby-identifier">id</span>[<span class="ruby-value">0</span><span class="ruby-operator">..</span><span class="ruby-value">5</span>]
 <span class="ruby-keyword">end</span></pre>
           </div>
           

@@ -73,7 +73,9 @@
 
   <ul class="link-list" role="directory">
     
-    <li ><a href="#method-i-require_dependencies">#require_dependencies</a>
+    <li ><a href="#method-i-json_header">#json_header</a>
+    
+    <li ><a href="#method-i-rooted">#rooted</a>
     
   </ul>
 </div>
@@ -109,11 +111,11 @@
        </header>
 
     
-      <div id="method-i-require_dependencies" class="method-detail ">
+      <div id="method-i-json_header" class="method-detail ">
         
         <div class="method-heading">
-          <span class="method-name">require_dependencies</span><span
-            class="method-args">(file_names)</span>
+          <span class="method-name">json_header</span><span
+            class="method-args">()</span>
           
           <span class="method-click-advice">click to toggle source</span>
           
@@ -127,10 +129,44 @@
           
 
           
-          <div class="method-source-code" id="require_dependencies-source">
+          <div class="method-source-code" id="json_header-source">
+            <pre><span class="ruby-comment"># File lib/CurlOneSelf.rb, line 11</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">json_header</span>
+  { <span class="ruby-string">&#39;Content-Type&#39;</span> =<span class="ruby-operator">&gt;</span><span class="ruby-string">&#39;application/json&#39;</span>, <span class="ruby-string">&#39;Authorization&#39;</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">write_token</span> }
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-rooted" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">rooted</span><span
+            class="method-args">(filename)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          
+          
+          
+
+          
+          <div class="method-source-code" id="rooted-source">
             <pre><span class="ruby-comment"># File app/controllers/application_controller.rb, line 2</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">require_dependencies</span>(<span class="ruby-identifier">file_names</span>)
-  <span class="ruby-identifier">file_names</span>.<span class="ruby-identifier">each</span>{ <span class="ruby-operator">|</span><span class="ruby-identifier">file_name</span><span class="ruby-operator">|</span> <span class="ruby-identifier">require_dependency</span> <span class="ruby-identifier">file_name</span>}
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">rooted</span>(<span class="ruby-identifier">filename</span>)
+  <span class="ruby-identifier">root</span> = <span class="ruby-constant">File</span>.<span class="ruby-identifier">absolute_path</span>(<span class="ruby-constant">File</span>.<span class="ruby-identifier">dirname</span>(<span class="ruby-keyword">__FILE__</span>) <span class="ruby-operator">+</span> <span class="ruby-string">&#39;/../../&#39;</span>)
+  <span class="ruby-identifier">root</span> <span class="ruby-operator">+</span> <span class="ruby-string">&#39;/&#39;</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">filename</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
           

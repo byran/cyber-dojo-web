@@ -2,7 +2,7 @@
 
 .  ./../admin_scripts/setup_docker_volume_mount_runner_env_vars.sh
 
-../languages/cache.rb
+../languages/refresh_cache.rb
 ./lib/make_disk_stub_cache.rb
 
 # - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,7 +24,7 @@ do
     echo
     echo "======$module======"  
     cd $module
-    ./run_all.sh
+    ./run_all.sh $*
     cd ..
 done
 echo

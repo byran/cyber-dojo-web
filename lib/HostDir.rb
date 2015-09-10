@@ -31,20 +31,18 @@ class HostDir
   end
 
   def make
-    # mkdir -p creates intermediate dirs as required
-    FileUtils.mkdir_p(path)
+    FileUtils.mkdir_p(path) # creates intermediate dirs as required
   end
 
   def write(filename, object)
-    pathed_filename = path + filename
-    FileUtils.mkdir_p(File.dirname(pathed_filename))
     # The filename could be pathed, eg a/b/c/def.hpp if I
     # allowed pathed filenames to be entered from the browser
     # (or via language manifests) which I currently don't.
+    pathed_filename = path + filename
+    FileUtils.mkdir_p(File.dirname(pathed_filename))
     if object.is_a? String
       File.open(pathed_filename, 'w') { |fd| fd.write(object) }
-      execute = 0755
-      File.chmod(execute, pathed_filename) if pathed_filename.end_with?('.sh')
+      File.chmod(execute=0755, pathed_filename) if pathed_filename.end_with?('.sh')
     else
       File.open(pathed_filename, 'w') { |file|
         file.write(JSON.unparse(object)) if filename.end_with?('.json')
@@ -57,7 +55,7 @@ class HostDir
   end
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  
+
   def each_kata_id
     return enum_for(:each_kata_id) unless block_given?    
     @disk[path].each_dir do |outer_dir|
@@ -67,6 +65,8 @@ class HostDir
     end    
   end
 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
   def complete_kata_id(id)
     if !id.nil? && id.length >= 4
       id.upcase!
@@ -80,9 +80,9 @@ class HostDir
     end
     id || ''
   end
-
+    
   # - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+    
   def lock(&block)
     # io locking uses blocking call.
     # For example, when a player starts-coding then
