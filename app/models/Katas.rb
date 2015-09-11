@@ -48,9 +48,11 @@ class Katas
 
   def each
     return enum_for(:each) unless block_given?
-    dir.each_kata_id do |id|
-      yield self[id]
-    end 
+    disk[path].each_dir do |outer_dir|
+      disk[path + outer_dir].each_dir do |inner_dir|
+        yield self[outer_dir + inner_dir]
+      end
+    end
   end
 
   def [](id)
@@ -59,12 +61,24 @@ class Katas
 
   def valid?(id)
     id.class.name === 'String' &&
-    id.length === 10 &&
-    id.chars.all?{ |char| is_hex?(char) }
+      id.length === 10 &&
+        id.chars.all?{ |char| is_hex?(char) }
   end
 
   def exists?(id)
     valid?(id) && self[id].exists?
+  end
+
+  def complete(id)
+    if !id.nil? && id.length >= 4
+      id.upcase!
+      outer_dir = disk[path + id[0..1]]
+      if outer_dir.exists?
+        dirs = outer_dir.each_dir.select { |inner_dir| inner_dir.start_with?(id[2..-1]) }
+        id = id[0..1] + dirs[0] if dirs.length === 1
+      end
+    end
+    id || ''
   end
 
 private
