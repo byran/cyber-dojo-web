@@ -22,6 +22,15 @@ if [ "$#" -eq 0 ]; then
 fi
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# make sure this is being run as www-data
+
+if [ $(whoami) != 'www-data' ]; then
+  cmd="sudo -E -u www-data ${0} $*"
+  $cmd
+  exit
+fi
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # collect trailing arguments to forward to tests
 
 while (( "$#" )); do

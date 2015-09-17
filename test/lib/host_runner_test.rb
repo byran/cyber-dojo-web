@@ -1,7 +1,13 @@
 #!/bin/bash ../test_wrapper.sh
 
-require_relative 'lib_test_base'
+require_relative 'LibTestBase'
 require 'tempfile'
+
+class SandboxStub
+  def path
+    '.'
+  end
+end
 
 class HostRunnerTests < LibTestBase
 
@@ -30,12 +36,6 @@ class HostRunnerTests < LibTestBase
     HostRunner.new
   end
   
-  class SandboxStub
-    def path
-      '.'
-    end
-  end
-
   def capture_all
     backup_stderr = STDERR.dup
     backup_stdout = STDOUT.dup

@@ -1,8 +1,7 @@
 
-ENV['RAILS_ENV'] = 'test'
-#ENV['CYBER_DOJO_RUNNER_CLASS_NAME'] = 'DummyTestRunner'
+ENV['RAILS_ENV'] = 'test' # ????
 
-gem "minitest"
+gem 'minitest'
 require 'minitest/autorun'
 
 root = '../..'
@@ -12,15 +11,13 @@ require_relative root + '/test/all'
 require_relative root + '/config/environment'
 require_relative root + '/test/TestDomainHelpers'
 require_relative root + '/test/TestExternalHelpers'
+require_relative root + '/test/TestHexIdHelpers'
   
-class ControllerTestBase < ActionDispatch::IntegrationTest
+class AppControllerTestBase < ActionDispatch::IntegrationTest
 
   include TestDomainHelpers
   include TestExternalHelpers
-  
-  def self.test(name, &block)
-    define_method("test_#{name}".to_sym, &block)
-  end
+  include TestHexIdHelpers
 
   def setup
     super

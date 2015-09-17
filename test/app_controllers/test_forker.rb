@@ -1,8 +1,8 @@
-#!/usr/bin/env ruby
+#!/bin/bash ../test_wrapper.sh
 
-require_relative 'controller_test_base'
+require_relative 'AppControllerTestBase'
 
-class ForkerControllerTest < ControllerTestBase
+class ForkerControllerTest < AppControllerTestBase
 
   test 'when id is invalid ' +
        'then fork fails ' +
