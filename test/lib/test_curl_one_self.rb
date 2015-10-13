@@ -54,7 +54,7 @@ class CurlOneSelfTests < LibTestBase
       '"actionTags":["create"],' +
       # Got a fail: dateTime came out as 2015-09-11T17
       # Not investigating further as Curl might not be kept anyway
-      '"dateTime":"2015-09-11T17:28:14-00:00",' +
+      '"dateTime":"' + Time.mktime(*hash[:now]).utc.iso8601.to_s[0..-2] + '-00:00",' +
       '"location":{"lat":"51.0190","long":"3.1000"},' +
       '"properties":{' +
       '"dojo-id":"F1A4B187E7",' +
