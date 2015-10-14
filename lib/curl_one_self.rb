@@ -50,7 +50,7 @@ class CurlOneSelf
   private
 
   def server_time(now)
-    s = Time.mktime(*now).utc.iso8601.to_s
+    s = Time.gm(*now).iso8601.to_s
     # eg 2015-06-25T09:11:15Z
     # the offset to local time is now known (yet)
     # this is represented by removing the Z and adding -00:00
