@@ -1,4 +1,5 @@
 require 'json'
+require 'shellwords'
 require_relative './background_process'
 
 class CurlOneSelf
@@ -38,16 +39,25 @@ class CurlOneSelf
   # - - - - - - - - - - - - - - - - - - - - - -
 
   def started(avatar)
-    # TODO: from OneSelf.rb.dead
+    @process.start(timeout("#{File.dirname(__FILE__)}/curl_one_self_process.rb started #{avatar.path.shellescape}", 10))
   end
 
   # - - - - - - - - - - - - - - - - - - - - - -
 
   def tested(avatar, hash)
-    # TODO: from OneSelf.rb.dead
+    @process.start(timeout("#{File.dirname(__FILE__)}/curl_one_self_process.rb tested #{hash.to_json.shellescape} #{avatar.path.shellescape}", 10))
   end
 
   private
+
+  def timeout(command, secs)
+    "timeout --signal=#{kill} #{secs}s #{command}"
+  end
+
+  def kill
+    9
+  end
+
 
   def server_time(now)
     s = Time.gm(*now).iso8601.to_s
