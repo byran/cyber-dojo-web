@@ -2,6 +2,7 @@
 
 require_relative './lib_test_base'
 require 'shellwords'
+require_relative '../../lib/curl_one_self_process.rb'
 
 class BackgroundProcessSpy
   def initialize
@@ -14,6 +15,25 @@ class BackgroundProcessSpy
     @processes_started << command
   end
 end
+
+class ForegroundProcessSpy
+  def initialize
+    @processes_started = []
+    @processes_result = []
+    @result_index = 0;
+  end
+
+  attr_reader :processes_started
+  attr :processes_result
+
+  def execute(command)
+    @processes_started << command
+    result = @processes_result[@result_index]
+    @result_index += 1
+    result
+  end
+end
+
 
 class CurlOneSelfTests < LibTestBase
 
@@ -134,5 +154,35 @@ class CurlOneSelfTests < LibTestBase
       'Incorrect background process started'
 
   end
+
+  # - - - - - - - - - - - - - - - - -
+
+  test '000000',
+  'process started' do
+    disk = DiskFake.new
+
+    kata = make_kata
+    lion = kata.start_avatar(['lion'])
+    foreground_process = ForegroundProcessSpy.new
+    foreground_process.processes_result << 10
+
+    arguments = ["started", "#{lion.path.shellescape}"]
+    process = CurlOneSelfProcess.new(arguments, disk, foreground_process)
+    process.run
+
+
+    assert_equal true, disk[lion.path].exists?('1self_manifest.json'),
+      'No 1self_manifest.json file created'
+
+    assert_equal 10, foreground_process.execute('hello')
+
+    assert_equal 2, foreground_process.processes_started.length,
+      'Incorrect number of processes started'
+
+    assert_equal 'hello', foreground_process.processes_started[0]
+    assert_equal 'world', foreground_process.processes_started[1]
+
+  end
+
 
 end
