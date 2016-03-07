@@ -1,0 +1,7 @@
+lua: error loading module 'hiker' from file './hiker.lua':
+	./hiker.lua:2: unexpected symbol near ';'
+stack traceback:
+	[C]: in ?
+	[C]: in function 'require'
+	hiker.tests.lua:1: in main chunk
+	[C]: in ?

@@ -1,0 +1,12 @@
+
+{
+  "visible_filenames": [
+    "hiker.tests.lua",
+    "hiker.lua",
+    "cyber-dojo.sh"
+  ],
+  "filename_extension" : ".lua",
+  "display_name": "Lua, LuaUnit",
+  "unit_test_framework": "luaunit",
+  "image_name": "cyberdojofoundation/lua_luaunit"
+}

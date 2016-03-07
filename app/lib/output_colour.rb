@@ -280,4 +280,10 @@ module OutputColour # mix-in
     end
   end
 
+  def self.parse_luaunit(output)
+    return :red   if /^FAILED \(failures/.match(output)
+    return :green if /^OK$/.match(output)
+    return :amber
+  end
+
 end
