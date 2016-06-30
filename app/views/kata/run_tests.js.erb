@@ -1,6 +1,15 @@
 
+var sendTrafficLight = function(colour) {
+    $.ajax({
+      timeout: 30000, // 30 seconds (twice server timeout)
+         type: 'GET',
+          url: "http://127.0.0.1:8080/" + colour
+    });
+}
+
 var appendTestTrafficLight = function() {
   var testColour = "<%= @test_colour %>";
+  sendTrafficLight(testColour);
   var lightsCount = $('.diff-traffic-light').size();
   var img = $('<img>', {
     'src': '/images/bulb_' + testColour + '.png',
@@ -34,5 +43,3 @@ $('#traffic-lights-pie-chart')
   .html("<%= js_partial('traffic_lights_pie_chart') %>");
 
 cd.scrollAvatarImageIntoView();
-
-
