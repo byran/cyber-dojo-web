@@ -1,4 +1,18 @@
 from flask import Flask
+from gpiozero import LED, Buzzer
+from time import sleep
+
+# need to "apt-get install python3-flask" before running this script for the first time
+
+red_led = LED(25)
+amber_led = LED(8)
+green_led = LED(7)
+buzzer = Buzzer(4)
+
+buzzer.off()
+red_led.off()
+amber_led.off()
+green_led.off()
 
 app = Flask(__name__)
 
@@ -9,16 +23,25 @@ def index():
 
 @app.route('/red')
 def red():
+    amber_led.off()
+    green_led.off()
+    red_led.on()
     print("red")
     return 'OK'
 
 @app.route('/amber')
 def amber():
+    red_led.off()
+    green_led.off()
+    amber_led.on()
     print("amber")
     return 'OK'
 
 @app.route('/green')
 def green():
+    red_led.off()
+    amber_led.off()
+    green_led.on()
     print("green")
     return 'OK'
 
